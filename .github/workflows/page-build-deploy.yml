@@ -1,0 +1,33 @@
+name: Page Duild & Deploy
+on:
+  push:
+    paths:
+      - '.github/workflows/page-build-deploy.yml'
+      - 'page/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.15.4'
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+          role-to-assume: arn:aws:iam::806488921245:role/dev-cooperation-execution
+          role-duration-seconds: 1200
+          role-session-name: assume
+      - name: Build
+        working-directory: ./page
+        run: |
+          yarn
+          yarn run build
+          yarn run export
+          aws s3 sync ./out s3://dev-sample-static-page-storage
