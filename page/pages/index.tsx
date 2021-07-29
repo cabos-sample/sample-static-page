@@ -65,6 +65,5 @@ export default function Home() {
         </a>
       </footer>
     </div>
-    
   )
 }
